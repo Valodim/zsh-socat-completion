@@ -13,7 +13,7 @@ if (( ! $+_socat_params || ! $+_socat_groups )); then
             setopt localoptions rematchpcre
 
             local raw_head raw_groups head
-            socat -h | awk '/address-head:/,0 { print }' | while IFS=$'\t' read raw_head raw_groups; do
+            _call_program socat-params socat -h | awk '/address-head:/,0 { print }' | while IFS=$'\t' read raw_head raw_groups; do
 
                 # parse head, format: proxy:<proxy-server>:<host>:<port>
                 [[ $raw_head =~ ' +([^:]+)((?::<[^:]+>)*)' ]] || continue
@@ -39,7 +39,7 @@ if (( ! $+_socat_params || ! $+_socat_groups )); then
         () {
             setopt localoptions rematchpcre
 
-            socat -hh | awk '/opt:/,0 { print }' | while read line; do
+            _call_program socat-opts socat -hh | awk '/opt:/,0 { print }' | while read line; do
                 # parse format: wronly  groups=OPEN phase=OPEN  type=BOOL
                 [[ $line =~ ' *(\w+)\s+groups=(\w+)\s.+type=(\w+)' ]] || continue
                 _socat_opt_groups[$match[1]]=$match[2]
