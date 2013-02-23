@@ -185,12 +185,12 @@ _socat_address_head() {
 }
 
 # complete common options
-_arguments -C -s \
+_arguments \
     -V'[print version and feature information to stdout, and exit]' \
-    -h'[print a help text describing command line options and addresses]' \
+    -h'[print a help text describing command line options and addresses, and exit]' \
     -hh'[like -h, plus a list of all common address option names]' \
     -hhh'[like -hh, plus a list of all available address option names]' \
-    -d'[increase verbosity (use up to 4 times; 2 are recommended)]' \
+    \*-d'[increase verbosity (use up to 4 times; 2 are recommended)]' \
     -D'[analyze file descriptors before loop]' \
     -ly'[log to syslog, using facility (default is daemon)]:log facility:( auth authpriv cron daemon kern lpr mail mark news security syslog user uucp local0 local1 local2 local3 local4 local5 local6 local7 )' \
     -lf'[log to file]:log file:_files' \
@@ -199,18 +199,18 @@ _arguments -C -s \
     -lp'[set the program name used for logging]:log program name' \
     -lu'[use microseconds for logging timestamps]' \
     -lh'[add hostname to log messages]' \
-    -v'[verbose data traffic, text]' \
-    -x'[verbose data traffic, hexadecimal]' \
+    '(-x)'-v'[verbose data traffic, text]' \
+    '(-v)'-x'[verbose data traffic, hexadecimal]' \
     -b'[set data buffer size (8192)]:buffer size (bytes)' \
     -s'[sloppy (continue on error)]' \
     -t'[wait seconds before closing second channel]:timeout (seconds)' \
     -T'[total inactivity timeout in seconds]:timeout (seconds)' \
-    -u'[unidirectional mode (left to right)]' \
-    -U'[unidirectional mode (right to left)]' \
+    '(-U)'-u'[unidirectional mode (left to right)]' \
+    '(-u)'-U'[unidirectional mode (right to left)]' \
     -g'[do not check option groups]' \
-    -L'[try to obtain lock, or fail]:lockfile:_files' \
-    -W'[try to obtain lock, or wait]:lockfile:_files' \
-    -4'[prefer IPv4 if version is not explicitly specified]' \
-    -6'[prefer IPv6 if version is not explicitly specified]' \
+    '(-W)'-L'[try to obtain lock, or fail]:lockfile:_files' \
+    '(-L)'-W'[try to obtain lock, or wait]:lockfile:_files' \
+    '(-6)'-4'[prefer IPv4 if version is not explicitly specified]' \
+    '(-4)'-6'[prefer IPv6 if version is not explicitly specified]' \
    '*:socket:_socat_address_head' && return 0
 
