@@ -109,9 +109,9 @@ _socat_address_head() {
     # do we have a socket type yet?
     if ! compset -P 1 '(#b)(*)(:|,)'; then
         # all which have pameters (ie, non-empty values)
-        compadd -S : -r ":, \t\n\-" -k '_socat_params[(R)?*]'
+        compadd -M 'M:{[:upper:]}={[:lower:]}' -S : -r ":, \t\n\-" -k '_socat_params[(R)?*]'
         # others (ie, empty value)
-        compadd -S , -q -k '_socat_params[(R)]'
+        compadd -M 'M:{[:upper:]}={[:lower:]}' -S , -q -k '_socat_params[(R)]'
         return 0
     fi
 
@@ -175,7 +175,7 @@ _socat_address_head() {
         while _tags; do
             for g in ${(s:,:)_socat_groups[$socket_type]}; do
                 _requested $g expl "${(L)g}" \
-                   compadd -S = -r '=, \t\n\-' -k "_socat_opt_groups[(R)$g]" && ret=0
+                   compadd -M 'M:{[:upper:]}={[:lower:]}' -S = -r '=, \t\n\-' -k "_socat_opt_groups[(R)$g]" && ret=0
             done
             (( ret )) || break
         done
