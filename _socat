@@ -1,31 +1,29 @@
 #compdef socat
 
-local curcontext="$curcontext" state line
-typeset -A opt_args
-
 if (( ! $+_socat_params || ! $+_socat_groups )); then
 
+    # we cache socat parameters, groups, option groups, option types parsed
+    # straight from socat, since these are platform specific
     typeset -gHA _socat_params _socat_groups _socat_opt_groups _socat_opt_types
 
     if _cache_invalid socat-params || _cache_invalid socat-groups \
             || ! _retrieve_cache socat-params || ! _retrieve_cache socat-groups ; then
         () { 
             setopt localoptions rematchpcre
+            local line
 
-            local raw_head raw_groups head
-            _call_program socat-params socat -h | awk '/address-head:/,0 { print }' | while IFS=$'\t' read raw_head raw_groups; do
+            # anyone know a better way to do "get rest starting from matching line" than awk?
+            _call_program socat-params socat -h | awk '/address-head:/,0 { print }' | while read -r line; do
 
-                # parse head, format: proxy:<proxy-server>:<host>:<port>
-                [[ $raw_head =~ ' +([^:]+)((?::<[^:]+>)*)' ]] || continue
-                head=$match[1]
+                # parse line, format: proxy:<proxy-server>:<host>:<port> groups=A,B,C
+                [[ $line =~ '([^:]+)((?::<[^:]+>)*)\s+groups=(.+)' ]] || continue
 
                 # canonicalize and note down parameters
-                _socat_params[$head]=${${${match[2]#:}//(\<|\>)/}//:/,}
+                _socat_params[$match[1]]=${${${match[2]#:}//(\<|\>)/}//:/,}
 
-                # parse groups, format: groups=FD,SOCKET,CHILD,RETRY,IP4,IP6,TCP,HTTP
-                _socat_groups[$head]=${raw_groups#groups=}
+                # store groups for this parameter
+                _socat_groups[$match[1]]=${match[3]}
 
-                # heads[$head]=$groups
             done
 
             _store_cache socat-params _socat_params
@@ -38,8 +36,9 @@ if (( ! $+_socat_params || ! $+_socat_groups )); then
             || ! _retrieve_cache socat-opt-groups || ! _retrieve_cache socat-opt-types ; then
         () {
             setopt localoptions rematchpcre
+            local line
 
-            _call_program socat-opts socat -hh | awk '/opt:/,0 { print }' | while read line; do
+            _call_program socat-opts socat -hh | awk '/opt:/,0 { print }' | while read -r line; do
                 # parse format: wronly  groups=OPEN phase=OPEN  type=BOOL
                 [[ $line =~ ' *(\w+)\s+groups=(\w+)\s.+type=(\w+)' ]] || continue
                 _socat_opt_groups[$match[1]]=$match[2]
@@ -105,6 +104,8 @@ if (( ! $+_socat_opt_handler )); then
 fi
 
 _socat_address_head() {
+    setopt localoptions extendedglob
+
     # do we have a socket type yet?
     if ! compset -P 1 '(#b)(*)(:|,)'; then
         # all which have pameters (ie, non-empty values)
@@ -125,7 +126,7 @@ _socat_address_head() {
     if [[ $lastop == ':' ]]; then
 
         # chunk away the parameters
-        while compset -P 1 '[a-zA-Z0-9_-]#:'; do
+        while compset -P 1 '[^:]#:'; do
             (( $#params_left > 0 )) && shift params_left
         done
 
@@ -183,17 +184,18 @@ _socat_address_head() {
     return ret
 }
 
+# complete common options
 _arguments -C -s \
     -V'[print version and feature information to stdout, and exit]' \
-    {-h,-?}'[print a help text describing command line options and addresses]' \
+    -h'[print a help text describing command line options and addresses]' \
     -hh'[like -h, plus a list of all common address option names]' \
     -hhh'[like -hh, plus a list of all available address option names]' \
     -d'[increase verbosity (use up to 4 times; 2 are recommended)]' \
     -D'[analyze file descriptors before loop]' \
-    -ly'[log to syslog, using facility (default is daemon)]:log facility' \
+    -ly'[log to syslog, using facility (default is daemon)]:log facility:( auth authpriv cron daemon kern lpr mail mark news security syslog user uucp local0 local1 local2 local3 local4 local5 local6 local7 )' \
     -lf'[log to file]:log file:_files' \
     -ls'[log to stderr (default if no other log)]' \
-    -lm'[mixed log mode (stderr during initialization, then syslog)]:log facility' \
+    -lm'[mixed log mode (stderr during initialization, then syslog)]:log facility:( auth authpriv cron daemon kern lpr mail mark news security syslog user uucp local0 local1 local2 local3 local4 local5 local6 local7 )' \
     -lp'[set the program name used for logging]:log program name' \
     -lu'[use microseconds for logging timestamps]' \
     -lh'[add hostname to log messages]' \
