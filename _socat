@@ -118,7 +118,7 @@ _socat_address_head() {
     local expl ret=1
 
     # any parameters?
-    local socket_type="$match[1]" lastop="$match[2]"
+    local socket_type="${(L)match[1]}" lastop="$match[2]"
 
     local -a params_left
     params_left=( "${(@s:,:)_socat_params[$socket_type]}" )
@@ -136,8 +136,8 @@ _socat_address_head() {
             _message -e parameters "No more parameters for $socket_type" && return 0
         else
             # do we have a handler? this works either by typename or socket type
-            if (( $+_socat_param_handler[${(L)socket_type}] )); then
-                _wanted param expl "parameter $params_left[1]" "${(@z)_socat_param_handler[${(L)socket_type}]}" && return 0
+            if (( $+_socat_param_handler[$socket_type] )); then
+                _wanted param expl "parameter $params_left[1]" "${(@z)_socat_param_handler[$socket_type]}" && return 0
             elif (( $+_socat_param_handler[${params_left[1]}] )); then
                 _wanted param expl "parameter $params_left[1]" "${(@z)_socat_param_handler[$params_left[1]]}" && return 0
             else
@@ -163,10 +163,10 @@ _socat_address_head() {
                 if (( $+_socat_opt_handler[$match[1]] )); then
                     _wanted optparam expl "option parameter <$_socat_opt_types[$match[1]]>" "${(@z)_socat_opt_handler[$match[1]]}" && return 0
                 else
-                    _message -e parameters "opt param for $match[1]: $_socat_opt_types[$match[1]]" && return 0
+                    _message -e optparam "opt param for $match[1]: $_socat_opt_types[$match[1]]" && return 0
                 fi
             else
-                _message -e parameters "opt param for $match[1]: unknown" && return 0
+                _message -e optparam "opt param for $match[1]: unknown" && return 0
             fi
         fi
 
